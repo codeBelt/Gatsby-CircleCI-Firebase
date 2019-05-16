@@ -19,27 +19,26 @@ jobs:
 
       # Download and cache dependencies
       - restore_cache:
+          name: Restore Yarn Package Cache
           keys:
-            # Find a cache corresponding to this specific package-lock.json checksum
-            # when this file is changed, this key will fail
-            - v1-npm-deps-{{ checksum "package-lock.json" }}
-            # Find the most recently generated cache used from any branch
-            - v1-npm-deps-
+            - yarn-packages-{{ checksum "yarn.lock" }}
 
       - run:
           name: Install Dependencies
-          command: npm install
+          command: yarn install --frozen-lockfile
 
       - save_cache:
-          key: v1-npm-deps-{{ checksum "package-lock.json" }}
-
+          name: Save Yarn Package Cache
+          key: yarn-packages-{{ checksum "yarn.lock" }}
           paths:
-            - ./node_modules
+            - ~/.cache/yarn
 
+      # Build Gatsby
       - run:
           name: Gatsby Build
           command: ./node_modules/.bin/gatsby build
 
+      # Deploy to Firebase
       - run:
           name: Firebase Deploy
           command: ./node_modules/.bin/firebase deploy --token=$FIREBASE_TOKEN
